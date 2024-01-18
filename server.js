@@ -1,4 +1,4 @@
-//backend.
+//backend/server.js
 
 const express = require('express');
 const Article = require('../backend/models/article')
@@ -28,6 +28,25 @@ mongoose.connect('mongodb+srv://testedb:batata123@cluster0.hcqoubl.mongodb.net/m
 // API Routes
 app.use('/api/articles', articleRouter);
 app.use('/api/articles/delete', deleteRouter);
+
+// Rota para páginas individuais de notícias
+app.get('/article/:slug', async (req, res) => {
+  const slug = req.params.slug;
+
+  try {
+    const article = await Article.findOne({ slug });
+
+    if (!article) {
+      return res.status(404).json({ message: 'Notícia não encontrada' });
+    }
+
+    // Retorna os detalhes da notícia como JSON
+    res.json(article);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+});
 
 
 // Serve the frontend application for any other routes

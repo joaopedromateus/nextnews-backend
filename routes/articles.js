@@ -1,7 +1,26 @@
-//articles.js
+//backend/routes/articles.js
 const express = require('express');
 const Article = require('../models/article'); // assuming 'Article' model is exported from 'article.js'
 const router = express.Router();
+
+// GET a specific article by slug
+router.get('/:slug', async (req, res) => {
+  const slug = req.params.slug;
+
+  try {
+    const article = await Article.findOne({ slug });
+
+    if (!article) {
+      return res.status(404).json({ message: 'Notícia não encontrada' });
+    }
+
+    res.json(article);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+});
+
 
 // GET all articles
 router.get('/', async (req, res) => {
