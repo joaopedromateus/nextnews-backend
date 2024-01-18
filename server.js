@@ -8,7 +8,6 @@ const path = require('path');
 const articleRouter = require('./routes/articles');
 const cors = require('cors');
 const deleteRouter = require('./routes/delete');
-
 const app = express();
 app.use(cors());
 
