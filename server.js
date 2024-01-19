@@ -1,61 +1,56 @@
-//backend/server.js
-
+// backend/server.js
+require('dotenv').config();
 const express = require('express');
-const Article = require('../backend/models/article')
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const path = require('path');
-const articleRouter = require('./routes/articles');
 const cors = require('cors');
+const path = require('path');
+const multer = require('multer');
+
+// Modelos e rotas
+const Article = require('../backend/models/article');
+const articleRouter = require('./routes/articles');
+const authRouter = require('./routes/auth');
 const deleteRouter = require('./routes/delete');
+const authenticateToken = require('./routes/authMiddleware');
+
 const app = express();
 
-const multer = require('multer');
+// Configuração do Multer para uploads de arquivos
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/')  // Certifique-se de que a pasta 'uploads' exista
+    cb(null, 'uploads/'); // Certifique-se de que a pasta 'uploads' exista
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
   }
 });
-
 const upload = multer({ storage: storage });
 
+app.use(cors());
+app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));
 
-
-app.use(cors());
-
-// Middleware to parse JSON bodies
-app.use(bodyParser.json());
-
-// Serve the static files from the 'client' directory
-app.use(express.static(path.join(__dirname, 'client')));
-
-
-// MongoDB Connection
+// Conexão com o MongoDB
 mongoose.connect('mongodb+srv://testedb:batata123@cluster0.hcqoubl.mongodb.net/myDatabaseName?retryWrites=true&w=majority')
   .then(() => console.log('MongoDB Connected...'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Rotas públicas (sem autenticação)
+app.use('/api/articles', articleRouter); // Rota para obter artigos
 
-// API Routes
-app.use('/api/articles', articleRouter);
-app.use('/api/articles/delete', deleteRouter);
+// Rotas protegidas (com autenticação)
+app.use('/api/admin/articles', authenticateToken, articleRouter); // Rota para criar/deletar/editar artigos
+app.use('/api/admin/delete', authenticateToken, deleteRouter); // Rota para ações administrativas adicionais
 
 // Rota para páginas individuais de notícias
 app.get('/article/:slug', async (req, res) => {
   const slug = req.params.slug;
-
   try {
     const article = await Article.findOne({ slug });
-
     if (!article) {
       return res.status(404).json({ message: 'Notícia não encontrada' });
     }
-
-    // Retorna os detalhes da notícia como JSON
     res.json(article);
   } catch (err) {
     console.error(err);
@@ -63,13 +58,18 @@ app.get('/article/:slug', async (req, res) => {
   }
 });
 
+// Rotas de autenticação
+app.use('/api/auth', authRouter);
 
-// Serve the frontend application for any other routes
+// Servir os arquivos estáticos da aplicação frontend
+app.use(express.static(path.join(__dirname, 'client')));
+
+// Capturar todas as outras rotas e redirecionar para a aplicação frontend
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'client', 'index.html'));
 });
 
-// Start the server
+// Iniciar o servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
