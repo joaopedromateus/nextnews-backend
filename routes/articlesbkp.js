@@ -1,7 +1,6 @@
-// backend/routes/articles.js
+//backend/routes/articles.js
 const express = require('express');
-const Article = require('../models/article');
-const upload = require('../multerConfig'); // Importar a configuração do multer
+const Article = require('../models/article'); // assuming 'Article' model is exported from 'article.js'
 const router = express.Router();
 
 // GET a specific article by slug
@@ -22,6 +21,7 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
+
 // GET all articles
 router.get('/', async (req, res) => {
   try {
@@ -33,15 +33,13 @@ router.get('/', async (req, res) => {
 });
 
 // POST a new article
-router.post('/', upload.array('images'), async (req, res) => {
-  const imagesPaths = req.files.map(file => file.path);
-
+router.post('/', async (req, res) => {
   const article = new Article({
     title: req.body.title,
     content: req.body.content,
     slug: req.body.slug,
     category: req.body.category,
-    images: imagesPaths
+    images: req.body.images // assuming images are sent as an array of URLs
   });
 
   try {
@@ -63,5 +61,6 @@ router.delete('/', async (req, res) => {
     res.status(500).json({ message: 'Erro interno do servidor ao excluir os artigos.' });
   }
 });
+
 
 module.exports = router;

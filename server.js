@@ -9,6 +9,22 @@ const articleRouter = require('./routes/articles');
 const cors = require('cors');
 const deleteRouter = require('./routes/delete');
 const app = express();
+
+const multer = require('multer');
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/')  // Certifique-se de que a pasta 'uploads' exista
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+  }
+});
+
+const upload = multer({ storage: storage });
+
+app.use('/uploads', express.static('uploads'));
+
+
 app.use(cors());
 
 // Middleware to parse JSON bodies
