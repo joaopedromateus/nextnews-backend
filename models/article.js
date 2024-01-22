@@ -7,6 +7,10 @@ const articleSchema = new mongoose.Schema({
   category: String,
   slug: String,
   images: [String],
+  publishDate: {
+    type: Date,
+    default: Date.now, // Define a data de publicação como a data atual por padrão
+  },
 });
 
 const Article = mongoose.model('Article', articleSchema);

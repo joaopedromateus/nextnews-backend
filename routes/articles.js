@@ -1,4 +1,3 @@
-// backend/routes/articles.js
 const express = require('express');
 const Article = require('../models/article');
 const upload = require('../multerConfig'); // Importar a configuração do multer
@@ -41,7 +40,8 @@ router.post('/', upload.array('images'), async (req, res) => {
     content: req.body.content,
     slug: req.body.slug,
     category: req.body.category,
-    images: imagesPaths
+    images: imagesPaths,
+    publishDate: new Date().toISOString() // Adiciona a data de publicação automaticamente
   });
 
   try {
@@ -53,6 +53,24 @@ router.post('/', upload.array('images'), async (req, res) => {
 });
 
 // Additional routes for PUT and DELETE...
+
+// DELETE a specific article by slug
+router.delete('/:slug', async (req, res) => {
+  const slug = req.params.slug;
+
+  try {
+    const deletedArticle = await Article.findOneAndDelete({ slug });
+
+    if (!deletedArticle) {
+      return res.status(404).json({ message: 'Artigo não encontrado para exclusão.' });
+    }
+
+    res.status(200).json({ message: 'Artigo excluído com sucesso.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro interno do servidor ao excluir o artigo.' });
+  }
+});
 
 // DELETE all articles
 router.delete('/', async (req, res) => {
