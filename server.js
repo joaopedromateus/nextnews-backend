@@ -8,7 +8,7 @@ const path = require('path');
 const multer = require('multer');
 
 // Modelos e rotas
-const Article = require('../backend/models/article');
+const Article = require('./models/article');
 const articleRouter = require('./routes/articles');
 const authRouter = require('./routes/auth');
 const deleteRouter = require('./routes/delete');
