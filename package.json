@@ -4,14 +4,16 @@
   "description": "Backend for a news portal",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js 
+    RUN npm i bcrypt
+    "
   },
   "engines": {
     "node": "20.11.0"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "bcryptjs": "^2.4.3",
+    // "bcrypt": "^5.1.1",
+    // "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.2",
