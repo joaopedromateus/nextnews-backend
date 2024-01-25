@@ -66,8 +66,13 @@ app.use(express.static(path.join(__dirname, 'client')));
 
 // Capturar todas as outras rotas e redirecionar para a aplicação frontend
 app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'client', 'index.html'));
+  res.sendFile(path.resolve(__dirname, 'client'));
 });
+
+// Permitir requisições do seu domínio frontend
+app.use(cors({
+  origin: 'https://portaldenoticiasnext.vercel.app'
+}));
 
 // Iniciar o servidor
 const PORT = process.env.PORT || 5000;

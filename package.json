@@ -4,7 +4,8 @@
   "description": "Backend for a news portal",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "tsup src"
   },
   "engines": {
     "node": "20.11.0"
