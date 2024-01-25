@@ -32,7 +32,7 @@ app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads')); // Servir uploads de arquivos estáticos
 
 // Conexão com o MongoDB
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect('mongodb+srv://testedb:batata123@cluster0.hcqoubl.mongodb.net/myDatabaseName?retryWrites=true&w=majority')
   .then(() => console.log('MongoDB Connected...'))
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -42,6 +42,7 @@ app.use('/api/articles', articleRouter); // Rota para obter artigos
 // Rotas protegidas (com autenticação)
 app.use('/api/admin/articles', authenticateToken, articleRouter); // Rota para criar/deletar/editar artigos
 app.use('/api/admin/delete', authenticateToken, deleteRouter); // Rota para ações administrativas adicionais
+
 
 // Rota para páginas individuais de notícias
 app.get('/article/:slug', async (req, res) => {
