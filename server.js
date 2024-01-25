@@ -1,10 +1,8 @@
-// backend/server.js
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const path = require('path');
 const multer = require('multer');
 
 // Modelos e rotas
@@ -27,12 +25,14 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://portaldenoticiasnext.vercel.app' // Permitir requisições do seu domínio frontend
+}));
 app.use(bodyParser.json());
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('uploads')); // Servir uploads de arquivos estáticos
 
 // Conexão com o MongoDB
-mongoose.connect('mongodb+srv://testedb:batata123@cluster0.hcqoubl.mongodb.net/myDatabaseName?retryWrites=true&w=majority')
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB Connected...'))
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -60,19 +60,6 @@ app.get('/article/:slug', async (req, res) => {
 
 // Rotas de autenticação
 app.use('/api/auth', authRouter);
-
-// Servir os arquivos estáticos da aplicação frontend
-app.use(express.static(path.join(__dirname, 'client')));
-
-// Capturar todas as outras rotas e redirecionar para a aplicação frontend
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'client'));
-});
-
-// Permitir requisições do seu domínio frontend
-app.use(cors({
-  origin: 'https://portaldenoticiasnext.vercel.app'
-}));
 
 // Iniciar o servidor
 const PORT = process.env.PORT || 5000;
