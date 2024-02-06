@@ -1,19 +1,15 @@
-//C:\next-news-project\backend\routes\articles.js
 const express = require('express');
 const Article = require('../models/article');
-const upload = require('../multerConfig'); // Importar a configuração do multer
 const router = express.Router();
 const AWS = require('aws-sdk');
-
-
+const multer = require('multer');
 
 // Configurar o SDK AWS
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: 'sua-regiao-do-bucket', // Substitua pela região do seu bucket
+  region: process.env.AWS_REGION, // Use a região definida no .env
 });
-
 
 // GET a specific article by slug
 router.get('/:slug', async (req, res) => {
@@ -44,7 +40,6 @@ router.get('/', async (req, res) => {
 });
 
 // POST a new article with image upload to S3
-const upload = multer(); // Use multer para processar a imagem, não é mais necessário o multerConfig
 router.post('/', upload.single('image'), async (req, res) => {
   try {
     const imageBuffer = req.file.buffer;
@@ -74,7 +69,6 @@ router.post('/', upload.single('image'), async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
-
 
 // Additional routes for PUT and DELETE...
 
