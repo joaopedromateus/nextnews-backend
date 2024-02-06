@@ -1,7 +1,19 @@
+//C:\next-news-project\backend\routes\articles.js
 const express = require('express');
 const Article = require('../models/article');
 const upload = require('../multerConfig'); // Importar a configuração do multer
 const router = express.Router();
+const AWS = require('aws-sdk');
+
+
+
+// Configurar o SDK AWS
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'sua-regiao-do-bucket', // Substitua pela região do seu bucket
+});
+
 
 // GET a specific article by slug
 router.get('/:slug', async (req, res) => {
@@ -31,26 +43,38 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST a new article
-router.post('/', upload.array('images'), async (req, res) => {
-  const imagesPaths = req.files.map(file => file.path);
-
-  const article = new Article({
-    title: req.body.title,
-    content: req.body.content,
-    slug: req.body.slug,
-    category: req.body.category,
-    images: imagesPaths,
-    publishDate: new Date().toISOString() // Adiciona a data de publicação automaticamente
-  });
-
+// POST a new article with image upload to S3
+const upload = multer(); // Use multer para processar a imagem, não é mais necessário o multerConfig
+router.post('/', upload.single('image'), async (req, res) => {
   try {
+    const imageBuffer = req.file.buffer;
+    const imageName = `${Date.now()}_${req.file.originalname}`;
+
+    const params = {
+      Bucket: 'nextnewsproject',
+      Key: `news-images/${imageName}`, // Caminho e nome da imagem no bucket
+      Body: imageBuffer,
+    };
+
+    await s3.upload(params).promise(); // Faz upload da imagem para o S3
+
+    const article = new Article({
+      title: req.body.title,
+      content: req.body.content,
+      slug: req.body.slug,
+      category: req.body.category,
+      images: [`https://nextnewsproject.s3.sa-east-1.amazonaws.com/news-images/${imageName}`], // URL da imagem no S3
+      publishDate: new Date().toISOString(),
+    });
+
     const newArticle = await article.save();
     res.status(201).json(newArticle);
   } catch (err) {
+    console.error(err);
     res.status(400).json({ message: err.message });
   }
 });
+
 
 // Additional routes for PUT and DELETE...
 
