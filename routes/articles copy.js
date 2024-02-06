@@ -1,19 +1,30 @@
 //C:\next-news-project\backend\routes\articles.js
 const express = require('express');
 const Article = require('../models/article');
-const upload = require('../multerConfig'); // Importação correta da configuração do multer
+const multer = require('multer'); // Importe o módulo multer corretamente
 const router = express.Router();
+const AWS = require('aws-sdk');
 
-// Não é necessário reconfigurar o AWS SDK aqui, já que isso é feito dentro de `../multerConfig`
+
+// Configurar o SDK AWS
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION, // Substitua pela região do seu bucket
+});
+
 
 // GET a specific article by slug
 router.get('/:slug', async (req, res) => {
   const slug = req.params.slug;
+
   try {
     const article = await Article.findOne({ slug });
+
     if (!article) {
       return res.status(404).json({ message: 'Notícia não encontrada' });
     }
+
     res.json(article);
   } catch (err) {
     console.error(err);
@@ -31,20 +42,31 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST a new article com upload de imagens para o S3
-router.post('/', upload.array('images'), async (req, res) => {
-  const imagesUrls = req.files.map(file => file.location); // Assume `location` é a URL da imagem no S3
-
-  const article = new Article({
-    title: req.body.title,
-    content: req.body.content,
-    slug: req.body.slug,
-    category: req.body.category,
-    images: imagesUrls,
-    publishDate: new Date().toISOString()
-  });
-
+// POST a new article with image upload to S3
+const upload = multer(); // Use multer para processar a imagem, não é mais necessário o multerConfig
+router.post('/', upload.single('image'), async (req, res) => {
   try {
+    const imageBuffer = req.file.buffer;
+    const imageName = `${Date.now()}_${req.file.originalname}`;
+
+    const params = {
+      Bucket: 'nextnewsproject',
+      Key: `news-images/${imageName}`, // Caminho e nome da imagem no bucket
+      Body: imageBuffer,
+    };
+
+    await s3.upload(params).promise(); // Faz upload da imagem para o S3
+
+    // Restante do código permanece o mesmo
+    const article = new Article({
+      title: req.body.title,
+      content: req.body.content,
+      slug: req.body.slug,
+      category: req.body.category,
+      images: [`https://nextnewsproject.s3.sa-east-1.amazonaws.com/news-images/${imageName}`], // URL da imagem no S3
+      publishDate: new Date().toISOString(),
+    });
+
     const newArticle = await article.save();
     res.status(201).json(newArticle);
   } catch (err) {
@@ -53,14 +75,20 @@ router.post('/', upload.array('images'), async (req, res) => {
   }
 });
 
+
+// Additional routes for PUT and DELETE...
+
 // DELETE a specific article by slug
 router.delete('/:slug', async (req, res) => {
   const slug = req.params.slug;
+
   try {
     const deletedArticle = await Article.findOneAndDelete({ slug });
+
     if (!deletedArticle) {
       return res.status(404).json({ message: 'Artigo não encontrado para exclusão.' });
     }
+
     res.status(200).json({ message: 'Artigo excluído com sucesso.' });
   } catch (err) {
     console.error(err);
