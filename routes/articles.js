@@ -1,3 +1,4 @@
+//C:\next-news-project\backend\routes\articles.js
 // Importações necessárias para o funcionamento do router.
 const express = require('express');
 const Article = require('../models/article');
