@@ -13,6 +13,8 @@ const authRouter = require('./routes/auth');
 const deleteRouter = require('./routes/delete');
 const authenticateToken = require('./routes/authMiddleware');
 const path = require('path');
+const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
+
 
 
 const app = express();
@@ -41,6 +43,35 @@ mongoose.connect('mongodb+srv://testedb:batata123@cluster0.hcqoubl.mongodb.net/m
 
 // Rotas públicas (sem autenticação)
 app.use('/api/articles', articleRouter); // Rota para obter artigos
+
+
+
+// Rota para servir imagens do S3 com chave dinâmica
+app.get('/s3-images/:key', async (req, res) => {
+  const key = req.params.key;
+  const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
+  });
+
+  const getObjectParams = {
+    Bucket: 'nextnewsproject', // Substitua pelo nome do seu bucket
+    Key: key // A chave (Key) é dinâmica com base na notícia
+  };
+
+  try {
+    const { Body } = await s3.send(new GetObjectCommand(getObjectParams));
+    res.setHeader('Content-Type', 'image/jpeg'); // Defina o tipo de conteúdo apropriado
+    Body.pipe(res);
+  } catch (err) {
+    console.error(err);
+    res.status(404).send('Imagem não encontrada');
+  }
+});
+
 
 // Rotas protegidas (com autenticação)
 app.use('/api/admin/articles', authenticateToken, articleRouter); // Rota para criar/deletar/editar artigos
