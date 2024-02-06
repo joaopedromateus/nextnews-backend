@@ -17,7 +17,6 @@ const upload = multer({
   storage: multerS3({
     s3: s3Client,
     bucket: 'nextnewsproject',
-    acl: 'public-read',
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key: function (req, file, cb) {
       const extension = path.extname(file.originalname);
