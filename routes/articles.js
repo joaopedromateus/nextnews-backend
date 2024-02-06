@@ -1,15 +1,18 @@
+//C:\next-news-project\backend\routes\articles.js
 const express = require('express');
 const Article = require('../models/article');
 const router = express.Router();
 const AWS = require('aws-sdk');
-const multer = require('multer');
+
+
 
 // Configurar o SDK AWS
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION, // Use a região definida no .env
+  region: 'sua-regiao-do-bucket', // Substitua pela região do seu bucket
 });
+
 
 // GET a specific article by slug
 router.get('/:slug', async (req, res) => {
@@ -40,14 +43,15 @@ router.get('/', async (req, res) => {
 });
 
 // POST a new article with image upload to S3
+const upload = multer(); // Use multer para processar a imagem, não é mais necessário o multerConfig
 router.post('/', upload.single('image'), async (req, res) => {
   try {
     const imageBuffer = req.file.buffer;
     const imageName = `${Date.now()}_${req.file.originalname}`;
 
     const params = {
-      Bucket: 'nextnewsproject',
-      Key: `news-images/${imageName}`, // Caminho e nome da imagem no bucket
+      Bucket: 'seu-nome-de-bucket',
+      Key: `caminho/para/a/imagem/${imageName}`, // Caminho e nome da imagem no bucket
       Body: imageBuffer,
     };
 
@@ -58,7 +62,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       content: req.body.content,
       slug: req.body.slug,
       category: req.body.category,
-      images: [`https://nextnewsproject.s3.sa-east-1.amazonaws.com/news-images/${imageName}`], // URL da imagem no S3
+      images: [`https://seu-nome-de-bucket.s3.sua-regiao-do-bucket.amazonaws.com/${params.Key}`], // URL da imagem no S3
       publishDate: new Date().toISOString(),
     });
 
