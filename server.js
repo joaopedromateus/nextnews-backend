@@ -72,7 +72,6 @@ app.get('/s3-images/:key', async (req, res) => {
   }
 });
 
-
 // Rotas protegidas (com autenticação)
 app.use('/api/admin/articles', authenticateToken, articleRouter); // Rota para criar/deletar/editar artigos
 app.use('/api/admin/delete', authenticateToken, deleteRouter); // Rota para ações administrativas adicionais
