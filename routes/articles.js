@@ -1,16 +1,16 @@
 //C:\next-news-project\backend\routes\articles.js
 const express = require('express');
 const Article = require('../models/article');
+const multer = require('multer'); // Importe o módulo multer corretamente
 const router = express.Router();
 const AWS = require('aws-sdk');
-
 
 
 // Configurar o SDK AWS
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: 'sua-regiao-do-bucket', // Substitua pela região do seu bucket
+  region: process.env.AWS_REGION, // Substitua pela região do seu bucket
 });
 
 
