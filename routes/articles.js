@@ -50,19 +50,20 @@ router.post('/', upload.single('image'), async (req, res) => {
     const imageName = `${Date.now()}_${req.file.originalname}`;
 
     const params = {
-      Bucket: 'seu-nome-de-bucket',
-      Key: `caminho/para/a/imagem/${imageName}`, // Caminho e nome da imagem no bucket
+      Bucket: 'nextnewsproject',
+      Key: `news-images/${imageName}`, // Caminho e nome da imagem no bucket
       Body: imageBuffer,
     };
 
     await s3.upload(params).promise(); // Faz upload da imagem para o S3
 
+    // Restante do código permanece o mesmo
     const article = new Article({
       title: req.body.title,
       content: req.body.content,
       slug: req.body.slug,
       category: req.body.category,
-      images: [`https://seu-nome-de-bucket.s3.sua-regiao-do-bucket.amazonaws.com/${params.Key}`], // URL da imagem no S3
+      images: [`https://nextnewsproject.s3.sa-east-1.amazonaws.com/news-images/${imageName}`], // URL da imagem no S3
       publishDate: new Date().toISOString(),
     });
 
@@ -73,6 +74,7 @@ router.post('/', upload.single('image'), async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+
 
 // Additional routes for PUT and DELETE...
 

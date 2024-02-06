@@ -12,6 +12,8 @@ const articleRouter = require('./routes/articles');
 const authRouter = require('./routes/auth');
 const deleteRouter = require('./routes/delete');
 const authenticateToken = require('./routes/authMiddleware');
+const path = require('path');
+
 
 const app = express();
 
