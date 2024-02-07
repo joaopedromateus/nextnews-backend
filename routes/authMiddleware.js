@@ -1,5 +1,6 @@
 // routes/authMiddleware.js
-const jwt = require('jsonwebtoken');
+
+const jwt = require('jsonwebtoken');  // Importação do JWT para autenticação.
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
