@@ -4,7 +4,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const multer = require('multer');
 
 // Modelos e rotas
 const Article = require('./models/article');
@@ -12,39 +11,22 @@ const articleRouter = require('./routes/articles');
 const authRouter = require('./routes/auth');
 const deleteRouter = require('./routes/delete');
 const authenticateToken = require('./routes/authMiddleware');
-const path = require('path');
 const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
 
-
-
 const app = express();
-
-// Configuração do Multer para uploads de arquivos
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Certifique-se de que a pasta 'uploads' exista
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage: storage });
 
 app.use(cors({
   origin: 'https://portaldenoticiasnext.vercel.app' // Permitir requisições do seu domínio frontend
 }));
 app.use(bodyParser.json());
-app.use('/uploads', express.static('uploads')); // Servir uploads de arquivos estáticos
 
-// Conexão com o MongoDB
-mongoose.connect('mongodb+srv://testedb:batata123@cluster0.hcqoubl.mongodb.net/myDatabaseName?retryWrites=true&w=majority')
-  .then(() => console.log('MongoDB Connected...'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Conexão com o MongoDB usando as credenciais do arquivo .env
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB Connected...')) // Log de sucesso na conexão com o MongoDB
+  .catch(err => console.error('MongoDB connection error:', err)); // Log de erro na conexão com o MongoDB
 
 // Rotas públicas (sem autenticação)
 app.use('/api/articles', articleRouter); // Rota para obter artigos
-
-
 
 // Rota para servir imagens do S3 com chave dinâmica
 app.get('/s3-images/:key', async (req, res) => {
@@ -58,13 +40,13 @@ app.get('/s3-images/:key', async (req, res) => {
   });
 
   const getObjectParams = {
-    Bucket: 'nextnewsproject', // Substitua pelo nome do seu bucket
+    Bucket: 'nextnewsproject',
     Key: key // A chave (Key) é dinâmica com base na notícia
   };
 
   try {
     const { Body } = await s3.send(new GetObjectCommand(getObjectParams));
-    res.setHeader('Content-Type', 'image/jpeg'); // Defina o tipo de conteúdo apropriado
+    res.setHeader('Content-Type', 'image/jpeg');
     Body.pipe(res);
   } catch (err) {
     console.error(err);
