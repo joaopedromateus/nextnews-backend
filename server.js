@@ -12,6 +12,7 @@ const path = require('path'); // Importa o módulo path para manipulação de ca
 const Article = require('./models/article');
 const articleRouter = require('./routes/articles');
 const authRouter = require('./routes/auth');
+const deleteRouter = require('./routes/delete');
 const authenticateToken = require('./routes/authMiddleware');
 
 const app = express(); // Cria uma instância do aplicativo Express
