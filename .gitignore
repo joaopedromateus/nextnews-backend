@@ -1,2 +1,4 @@
-# Ignorar a pasta node_modules
+# .gitignore
 node_modules/
+
+.env

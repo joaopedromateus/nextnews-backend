@@ -22,10 +22,7 @@ app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads')); // Servir uploads de arquivos estáticos
 
 // Conexão com o MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB Connected...'))
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -44,7 +41,7 @@ app.get('/s3-images/:key', async (req, res) => {
   });
 
   const getObjectParams = {
-    Bucket: 'nextnewsproject', // Substitua pelo nome do seu bucket
+    Bucket: 'nextnewsproject',
     Key: key // A chave (Key) é dinâmica com base na notícia
   };
 
